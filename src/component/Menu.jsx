@@ -3,7 +3,8 @@ import "../App.css";
   
 const Menu = ({ 
   setLineColor, 
-  setLineWidth, 
+  setLineWidth,
+  lineWidth,
   isDrawingMode, 
   setIsDrawingMode, 
   setLineOpacity,
@@ -12,7 +13,10 @@ const Menu = ({
   downloadImage,
   pasteCutImage,
   isPasteMode,
-  setIsPasteMode
+  setIsPasteMode,
+  setIsCropMode,
+  isCropMode,
+  cleanCanvas,
 }) => {
 
   const toggleIsDrawing = () => {
@@ -30,47 +34,63 @@ const Menu = ({
     setIsDrawingMode(false)
     setIsPasteMode(!isPasteMode)
   };
+  const toggleIsCrop = () => {
+    setIsRectangMode(true)
+    setIsCropMode(true)
+    setIsDrawingMode(false)
+    setIsPasteMode(false)
+  };
 
   console.log('drawing', isDrawingMode)
   console.log('rectang', isRectangMode)
   console.log('pasting', isPasteMode)
+  console.log('cropping', isCropMode)
 
 
 
   return (
-    <div className="Menu">
-      <label>Brush Color </label>
-      <input
-        type="color"
-        onChange={(e) => {
-          setLineColor(e.target.value);
-        }}
-      />
-      <label>Brush Width </label>
-      <input
-        type="range"
-        min="3"
-        max="20"
-        onChange={(e) => {
-          setLineWidth(e.target.value);
-        }}
-      />
-      <label>Brush Opacity</label>
-      <input
-        type="range"
-        min="1"
-        max="100"
-        onChange={(e) => {
-          setLineOpacity(e.target.value / 100);
-        }}
-      />
-      <button onClick={() => toggleIsDrawing()}>Start draw</button>
-      <button onClick={() => toggleIsRectang()}>Cut</button>
-      <button onClick={() => toggleIsPaste()}>Paste</button>
+    <div className="menu">
+      <div className="menu__button">
+        {/* <button className="menu__button" onClick={() => toggleIsDrawing()}>Start draw</button> */}
+        <button className="menu__button-crop" onClick={() => toggleIsCrop()}>Crop</button>
+        <button className="menu__button-cut" onClick={() => toggleIsRectang()}>Copy</button>
+        <button className="menu__button-paste" onClick={() => toggleIsPaste()}>Paste</button>
+        <button className="menu__button-clean" onClick={() => cleanCanvas()}>Clean</button>
 
-      <a onClick={downloadImage} href="/download">
-        <button className="download">Save</button>
-      </a>
+        <a className="menu__button-save" onClick={downloadImage} href="/download">
+          <button className="download">Save</button>
+        </a>
+      </div>
+
+      <div className="menu-choose">
+        <label>Brush Color </label>
+        <input
+          type="color"
+          onChange={(e) => {
+            setLineColor(e.target.value);
+          }}
+        />
+        <label>Brush Width </label>
+        <input
+          type="range"
+          value={lineWidth}
+          min="1"
+          max="20"
+          onChange={(e) => {
+            setLineWidth(e.target.value);
+          }}
+        />
+        <label>Brush Opacity</label>
+        <input
+          type="range"
+          min="1"
+          max="100"
+          value={100}
+          onChange={(e) => {
+            setLineOpacity(e.target.value / 100);
+          }}
+        />
+      </div>
     </div>
   );
 };
