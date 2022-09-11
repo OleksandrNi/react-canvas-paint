@@ -1,70 +1,67 @@
-import React, { useState } from "react";
+import React from "react";
 import "../App.css";
   
 const Menu = ({ 
   setLineColor, 
-  setLineWidth,
   lineWidth,
-  isDrawingMode, 
+  setLineWidth,
   setIsDrawingMode, 
+  lineOpacity,
   setLineOpacity,
   isRectangMode,
   setIsRectangMode,
-  downloadImage,
-  pasteCutImage,
   isPasteMode,
   setIsPasteMode,
   setIsCropMode,
-  isCropMode,
+  downloadImage,
   cleanCanvas,
+  undoHistory,
+  redoHistory,
+  imageHistoryRedo,
+  imageHistoryUndo
 }) => {
 
-  const toggleIsDrawing = () => {
-    setIsDrawingMode(!isDrawingMode)
-    setIsRectangMode(false)
-    setIsPasteMode(false)
-  };
   const toggleIsRectang = () => {
-    setIsRectangMode(!isRectangMode)
-    setIsDrawingMode(false)
-    setIsPasteMode(false)
+    setIsRectangMode(!isRectangMode);
+    setIsDrawingMode(false);
+    setIsPasteMode(false);
   };
+
   const toggleIsPaste = () => {
-    setIsRectangMode(false)
-    setIsDrawingMode(false)
-    setIsPasteMode(!isPasteMode)
+    setIsRectangMode(false);
+    setIsDrawingMode(false);
+    setIsPasteMode(!isPasteMode);
   };
+
   const toggleIsCrop = () => {
-    setIsRectangMode(true)
-    setIsCropMode(true)
-    setIsDrawingMode(false)
-    setIsPasteMode(false)
+    setIsRectangMode(true);
+    setIsCropMode(true);
+    setIsDrawingMode(false);
+    setIsPasteMode(false);
   };
-
-  console.log('drawing', isDrawingMode)
-  console.log('rectang', isRectangMode)
-  console.log('pasting', isPasteMode)
-  console.log('cropping', isCropMode)
-
-
 
   return (
     <div className="menu">
       <div className="menu__button">
-        {/* <button className="menu__button" onClick={() => toggleIsDrawing()}>Start draw</button> */}
-        <button className="menu__button-crop" onClick={() => toggleIsCrop()}>Crop</button>
-        <button className="menu__button-cut" onClick={() => toggleIsRectang()}>Copy</button>
-        <button className="menu__button-paste" onClick={() => toggleIsPaste()}>Paste</button>
-        <button className="menu__button-clean" onClick={() => cleanCanvas()}>Clean</button>
-
-        <a className="menu__button-save" onClick={downloadImage} href="/download">
-          <button className="download">Save</button>
-        </a>
+        <div>
+          <button className="button menu__button-crop" onClick={() => toggleIsCrop()} disabled={isRectangMode}></button>
+          <button className="button menu__button-copy" onClick={() => toggleIsRectang()} disabled={isRectangMode}></button>
+          <button className="button menu__button-paste" onClick={() => toggleIsPaste()} disabled={isPasteMode}></button>
+          <button className="button menu__button-clean" onClick={() => cleanCanvas()}></button>
+        </div>
+        <div>
+          <button className="button menu__button-undo" onClick={() => undoHistory()} disabled={!imageHistoryUndo.length}></button>
+          <button className="button menu__button-redo" onClick={() => redoHistory()} disabled={!imageHistoryRedo.length}></button>
+          <a onClick={downloadImage} href="/download">
+            <button className="button menu__button-save"></button>
+          </a>
+        </div>
       </div>
 
-      <div className="menu-choose">
-        <label>Brush Color </label>
+      <div className="menu__choose">
+        <label className="menu__choose-label"></label>
         <input
+         className="menu__choose-color"
           type="color"
           onChange={(e) => {
             setLineColor(e.target.value);
@@ -85,7 +82,7 @@ const Menu = ({
           type="range"
           min="1"
           max="100"
-          value={100}
+          value={lineOpacity * 100}
           onChange={(e) => {
             setLineOpacity(e.target.value / 100);
           }}

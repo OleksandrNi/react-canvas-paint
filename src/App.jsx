@@ -15,21 +15,23 @@ function App() {
   const [isRectang, setIsRectang] = useState(false);
   
   const [isPasteMode, setIsPasteMode] = useState(false);
-  // const [isPaste, setIsPaste] = useState(false);
+  const [isCropMode, setIsCropMode] = useState(false);
   
   const [startX, setStartX] = useState();
   const [startY, setStartY] = useState();
   const [endX, setEndX] = useState();
   const [endY, setEndY] = useState();
   
-  const [isCropMode, setIsCropMode] = useState(false);
-
-  const[imageData, setImageData] = useState()
-  const[saved, setSaved] = useState()
-  const[savedTemp, setSavedTemp] = useState()
-
+  const[imageData, setImageData] = useState();
+  const[saved, setSaved] = useState();
+  const[savedTemp, setSavedTemp] = useState();
+  
   const canvasHeight = 400;
   const canvasWidth = 600;
+
+  const [imageHistoryUndo, setImageHistoryUndo] = useState([]);
+  const [imageHistoryRedo, setImageHistoryRedo] = useState([]);
+  const [startSave, setStartSave] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,6 +44,33 @@ function App() {
     ctxRef.current = ctx;
   }, [lineColor, lineWidth, lineOpacity]);
 
+  
+  useEffect(() => {
+    const image = ctxRef.current.getImageData(0, 0, canvasWidth, canvasHeight);
+    if (image && startSave) {
+      setImageHistoryUndo([
+        image,
+        ...imageHistoryUndo,
+      ]);
+    }
+  },[startSave]);
+
+  useEffect(() => {
+    if (isRectangMode && startX !== endX) {
+      setImageData(ctxRef.current.getImageData(startX + 1, startY + 1, endX - startX - 2, endY - startY - 2));
+    }
+  },[endX]);
+
+  useEffect(() => {
+    if (isCropMode) {
+      setStartSave(true);
+      ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctxRef.current.putImageData(imageData, canvasWidth / 2 - imageData.width / 2, canvasHeight / 2 - imageData.height / 2);
+      setIsCropMode(false);
+      setIsDrawingMode(true);
+      setIsRectangMode(false);
+    }
+  },[imageData])
 
   const onMouseDowning = () => {
     if(isDrawingMode) {
@@ -54,6 +83,7 @@ function App() {
       return endPaste;
     }
   }
+
   const onMouseUpping = () => {
     if(isDrawingMode) {
       return endDrawing;
@@ -62,6 +92,7 @@ function App() {
       return endRectang;
     }
   }
+
   const onMouseMoving = () => {
     if(isDrawingMode) {
       return draw;
@@ -69,12 +100,13 @@ function App() {
     if(isRectangMode) {
       return drawRectang;
     }
-    if(isPasteMode) {
+    if(isPasteMode && imageData) {
       return drawPaste;
     }
   }
 
   const startDrawing = (e) => {
+    setStartSave(false);
     ctxRef.current.beginPath();
     ctxRef.current.moveTo(
       e.nativeEvent.offsetX, 
@@ -84,6 +116,7 @@ function App() {
   };
   
   const endDrawing = () => {
+    setStartSave(true);
     ctxRef.current.closePath();
     setIsDrawing(false);
   };
@@ -100,99 +133,92 @@ function App() {
   };
 
   const startRectang = (e) => {
-    setIsRectang(true)
-    setStartX(e.nativeEvent.offsetX)
-    setStartY(e.nativeEvent.offsetY)
-    setSavedTemp(ctxRef.current.getImageData(0, 0, canvasWidth, canvasHeight))
-    setSaved(canvasRef.current.toDataURL())
+    setStartSave(false);
+    setIsRectang(true);
+    setStartX(e.nativeEvent.offsetX);
+    setStartY(e.nativeEvent.offsetY);
+    setSavedTemp(ctxRef.current.getImageData(0, 0, canvasWidth, canvasHeight));
+    setSaved(canvasRef.current.toDataURL());
   };
 
   const endRectang = (e) => {
-    ctxRef.current.putImageData(savedTemp, 0, 0)
-    setEndX(e.nativeEvent.offsetX)
-    setEndY(e.nativeEvent.offsetY)
-    setIsRectang(false)
+    ctxRef.current.putImageData(savedTemp, 0, 0);
+    setEndX(e.nativeEvent.offsetX);
+    setEndY(e.nativeEvent.offsetY);
+    setIsRectang(false);
   };
 
   const drawRectang = (e) => {
     if (!isRectang) {
       return;
     }
-    const img = new Image()
-    img.src = saved
+    const img = new Image();
+    img.src = saved;
     img.onload = () => {
-      ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight)
-      ctxRef.current.drawImage(img, 0, 0, canvasWidth, canvasHeight)
-      ctxRef.current.beginPath()
+      ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctxRef.current.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+      ctxRef.current.beginPath();
       if (!isDrawing) {
         ctxRef.current.lineWidth = 1;
         ctxRef.current.strokeStyle = 'black';
-        ctxRef.current.setLineDash([10, 20])
+        ctxRef.current.setLineDash([10, 20]);
       }
-      
       ctxRef.current.rect(startX, startY, e.nativeEvent.offsetX - startX, e.nativeEvent.offsetY - startY);
       ctxRef.current.stroke();
-      ctxRef.current.setLineDash([])
+      ctxRef.current.setLineDash([]);
       ctxRef.current.strokeStyle = lineColor;
       ctxRef.current.lineWidth = lineWidth;
     }
-    // ctxRef.current.restore()
   }
 
   const drawPaste = (e) => {
-    const img = new Image()
-    img.src = saved
-    console.log('img in paste data', img)
-    ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight)
-    ctxRef.current.drawImage(img, 0, 0, canvasWidth, canvasHeight)
-    ctxRef.current.putImageData(imageData, e.nativeEvent.offsetX, e.nativeEvent.offsetY)
+    const img = new Image();
+    img.src = saved;
+    ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctxRef.current.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+    ctxRef.current.putImageData(imageData, e.nativeEvent.offsetX - imageData.width / 2, e.nativeEvent.offsetY - imageData.height / 2);
   }
 
   const endPaste = (e) => {
-    setIsPasteMode(false)
-    setIsDrawingMode(true)
+    setStartSave(true);
+    setIsPasteMode(false);
+    setIsDrawingMode(true);
   };
 
-  useEffect(() => {
-    if (isRectangMode && startX !== endX) {
-      setImageData(ctxRef.current.getImageData(startX + 1, startY + 1, endX - startX - 2, endY - startY - 2))
-      console.log('img data', imageData)
-      
-      // ctxRef.current.clearRect(startX, startY, endX - startX, endY - startY) // cut image from rectang
-      // ctx.fillStyle = 'white';
-      // ctx.fill()
-    }
-    // if (isCropMode) {
-    //   console.log('img data in cropeMode', imageData)
-      
-    //   ctxRef.current.clearRect(0, 0, 600, 400)
-    //   ctxRef.current.putImageData(imageData, startX + 1, startY + 1, endX - startX - 2, endY - startY - 2)
-    //   setIsCropMode(false)
-    // }
-  },[endX])
-
-  useEffect(() => {
-    if (isCropMode) {
-      console.log('img data in cropeMode', imageData)
-      
-      ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight)
-      ctxRef.current.putImageData(imageData, canvasWidth / 2 - imageData.width / 2, canvasHeight / 2 - imageData.height / 2)
-      setIsCropMode(false)
-      setIsDrawingMode(true)
-      setIsRectangMode(false)
-    }
-  },[imageData])
-
   const cleanCanvas = () => {
-    ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight)
-  }
+    ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight);
+  };
 
   const downloadImage = (e) => {
-    const link = e.currentTarget
-    link.setAttribute('download', "picture.png")
-    const picture = canvasRef.current.toDataURL('image/png')
-    link.setAttribute('href', picture)
-  }
+    const link = e.currentTarget;
+    link.setAttribute('download', "picture.png");
+    const picture = canvasRef.current.toDataURL('image/png');
+    link.setAttribute('href', picture);
+  };
+
+  const undoHistory = () => {
+    if (imageHistoryUndo.length) {
+      setImageHistoryRedo([
+        imageHistoryUndo[0],
+        ...imageHistoryRedo,
+      ])
+      imageHistoryUndo[1] 
+        ? ctxRef.current.putImageData(imageHistoryUndo[1], 0, 0)
+        : ctxRef.current.clearRect(0, 0, canvasWidth, canvasHeight);
+      setImageHistoryUndo(imageHistoryUndo.slice(1));
+    }
+  };
+
+  const redoHistory = () => {
+    if (imageHistoryRedo.length) {
+      setImageHistoryUndo([
+        imageHistoryRedo[0],
+        ...imageHistoryUndo
+      ])
+      ctxRef.current.putImageData(imageHistoryRedo[0], 0, 0);
+      setImageHistoryRedo(imageHistoryRedo.slice(1));
+    }
+  };
 
   return (
     <div className="App">
@@ -201,17 +227,20 @@ function App() {
           setLineColor={setLineColor}
           lineWidth={lineWidth}
           setLineWidth={setLineWidth}
-          isDrawingMode={isDrawingMode}
           setIsDrawingMode={setIsDrawingMode}
+          lineOpacity={lineOpacity}
           setLineOpacity={setLineOpacity}
           isRectangMode={isRectangMode}
           setIsRectangMode={setIsRectangMode}
-          downloadImage={downloadImage}
-          cleanCanvas={cleanCanvas}
           isPasteMode={isPasteMode}
           setIsPasteMode={setIsPasteMode}
           setIsCropMode={setIsCropMode}
-          isCropMode={isCropMode}
+          cleanCanvas={cleanCanvas}
+          downloadImage={downloadImage}
+          undoHistory={undoHistory}
+          redoHistory={redoHistory}
+          imageHistoryRedo={imageHistoryRedo}
+          imageHistoryUndo={imageHistoryUndo}
         />
       <div className="draw-area">
         <div className="canvas__area">

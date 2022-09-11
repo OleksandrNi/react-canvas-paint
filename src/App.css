@@ -5,49 +5,95 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background-image: linear-gradient(
-    120deg, #fdfbfb 0%, #ebedee 100%);
+  background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
 }
   
 h1 {
-  /* font-family: 'Lobster', cursive; */
+  font-family: 'Lobster', cursive;
   font-size: 50px;
-  /* color: #4644f0; */
+  color: #4644f0;
 }
   
 .draw-area {
-  /* width: 600px;
-  height: 400px; */
+  margin: 10px 40px;
   border: 2px solid #808080;
   position: relative;
   background-color: #fff;
-  /* background-color: white; */
 }
   
 .menu {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  width: 100vw;
-  /* height: 50px; */
+  width: 95%;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  border-radius: 5px;
   align-items: center;
-  background-color: #a3a3a32d;
-  margin: auto;
-  /* margin-top: 10px; */
+}
+
+.menu__choose {
+  display: flex;
+  width: 100%;
+  flex-grow: 1;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 5px;
+  margin: 10px 0;
+  border: 1px solid grey;
+  box-shadow: 0 4px 5px grey;
+}
+
+.menu__choose-label {
+  margin-right: 0 6px;
+}
+
+.menu__choose-color {
+  margin-right: 20px;
 }
 
 .menu__button {
   display: flex;
+  width: 100%;
+  flex-grow: 1;
+  justify-content: space-between;
   padding: 4px;
   margin: 10px 0;
+  border: 1px solid grey;
+  box-shadow: 0 4px 5px grey;
 }
 
-.menu-choose {
-  display: flex;
-  margin: 10px 0;
+.button {
+  height: 40px;
+  width: 40px;
+  margin-right: 2px;
+  background-size: cover;
 }
 
+.menu__button-crop {
+  background: url(./icons/crop.png) no-repeat center center;
+}
+
+.menu__button-copy {
+  background: url(./icons/copy.png) no-repeat center center;
+}
+
+.menu__button-paste {
+  background: url(./icons/paste.png) no-repeat center center;
+}
+
+.menu__button-clean {
+  background: url(./icons/clean.png) no-repeat center center;
+}
+
+.menu__button-save {
+  background: url(./icons/save.png) no-repeat center center;
+}
+
+.menu__button-undo {
+  background: url(./icons/undo.png) no-repeat center center;
+}
+
+.menu__button-redo {
+  background: url(./icons/redo.png) no-repeat center center;
+}
