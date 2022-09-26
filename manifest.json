@@ -1,0 +1,8 @@
+{
+  "short_name": "React Canvas Paint",
+  "name": "Create React Paint App via Canvas",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
